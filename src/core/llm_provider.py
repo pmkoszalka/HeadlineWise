@@ -585,6 +585,7 @@ def _build_mock_assessment(headlines: List[str]) -> List[HeadlineAssessmentItem]
                     ctr_potential=md["ctr"],
                     clarity=md["clarity"],
                     seo_fit=md["seo"],
+                    credibility=80,
                 ),
                 risk_flags=md["flags"],
                 rationale=md["rationale"],
