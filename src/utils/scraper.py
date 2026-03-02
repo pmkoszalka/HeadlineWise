@@ -5,10 +5,12 @@ and scrapes article headlines from supported news portals.
 
 import logging
 from dataclasses import dataclass, field
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin
 
+import re
 import requests
 from bs4 import BeautifulSoup
+# import trafilatura (moved to lazy-load inside _extract_text_enhanced)
 
 logger = logging.getLogger(__name__)
 
@@ -30,15 +32,14 @@ _NOISE_TAGS = [
     "advertisement",
 ]
 
-# Realistic browser User-Agent to avoid bot-blocking
 _USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/122.0.0.0 Safari/537.36"
 )
 
-_REQUEST_TIMEOUT = 10  # seconds
-_MIN_TEXT_LENGTH = 200  # chars – below this we consider extraction failed
+_REQUEST_TIMEOUT = 10
+_MIN_TEXT_LENGTH = 300  # Increased for better quality threshold
 
 
 @dataclass
@@ -47,6 +48,8 @@ class ScrapeResult:
     text: str = ""
     error: str = ""
     url: str = ""
+    canonical_url: str = ""
+    is_article_deterministic: bool = False
     word_count: int = field(init=False, default=0)
 
     def __post_init__(self):
@@ -54,40 +57,136 @@ class ScrapeResult:
 
 
 def _is_valid_url(url: str) -> bool:
+    """Check if the URL is valid and has a scheme/netloc."""
     try:
-        parsed = urlparse(url)
-        return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+        if not url.startswith(("http://", "https://")):
+            return False
+        return len(url.split("://")[1].split("/")[0]) > 0
     except Exception:
         return False
 
 
-def _extract_text(soup: BeautifulSoup) -> str:
-    """Remove noise tags, then prefer <article>/<main>, fall back to <body>."""
-    for tag in soup.find_all(_NOISE_TAGS):
-        tag.decompose()
+def _normalize_whitespace(text: str) -> str:
+    """Normalize whitespace: remove excessive newlines and spaces."""
+    if not text:
+        return ""
+    # Replace 3+ newlines with 2
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    # Replace multiple spaces with one
+    text = re.sub(r" {2,}", " ", text)
+    return text.strip()
 
-    # Priority containers
-    for selector in (
-        "article",
-        "main",
-        '[role="main"]',
-        ".article-body",
-        ".post-content",
-        ".entry-content",
-        "#content",
-    ):
-        container = soup.select_one(selector)
-        if container:
-            text = container.get_text(separator="\n", strip=True)
-            if len(text) >= _MIN_TEXT_LENGTH:
-                return text
 
-    # Last resort: body
-    body = soup.find("body")
-    if body:
-        return body.get_text(separator="\n", strip=True)
+def _deduplicate_paragraphs(text: str) -> str:
+    """Simple paragraph-level deduplication to remove repeated snippets."""
+    if not text:
+        return ""
+    paragraphs = text.split("\n\n")
+    seen = set()
+    unique_paragraphs = []
+    for p in paragraphs:
+        p_clean = p.strip()
+        if not p_clean:
+            continue
+        if p_clean not in seen:
+            unique_paragraphs.append(p_clean)
+            seen.add(p_clean)
+    return "\n\n".join(unique_paragraphs)
 
-    return soup.get_text(separator="\n", strip=True)
+
+def check_is_article_deterministic(text: str, soup: BeautifulSoup) -> bool:
+    """
+    Deterministic check if the content looks like an article.
+    Heuristics: word count, paragraph count, presence of <article> or ld+json.
+    """
+    if not text or len(text) < _MIN_TEXT_LENGTH:
+        return False
+
+    words = text.split()
+    if len(words) < 100:
+        return False
+
+    # Check for ld+json NewsArticle/Article
+    scripts = soup.find_all("script", type="application/ld+json")
+    for script in scripts:
+        try:
+            content = script.string.lower()
+            if "newsarticle" in content or '"article"' in content:
+                return True
+        except Exception:
+            continue
+
+    # Paragraph density check
+    paragraphs = [p for p in text.split("\n\n") if len(p.split()) > 10]
+    if len(paragraphs) >= 3:
+        return True
+
+    return False
+
+
+def _extract_text_enhanced(
+    html_content: str, url: str
+) -> tuple[str, str, bool, BeautifulSoup]:
+    """
+    Extract text using trafilatura (primary) with BS4 fallback.
+    Returns (text, canonical_url, is_article_deterministic, soup).
+    """
+    soup = BeautifulSoup(html_content, "lxml")
+
+    # 1. Trafilatura extraction (highly robust) — Lazy-loaded to avoid ~1s startup delay
+    import trafilatura  # noqa: PLC0415
+
+    text = trafilatura.extract(
+        html_content,
+        include_comments=False,
+        include_tables=True,
+        no_fallback=False,
+        favor_precision=True,
+    )
+
+    # 2. Manual Fallback logic if trafilatura fails or returns too little
+    if not text or len(text) < _MIN_TEXT_LENGTH:
+        # Re-initialize clean soup for fallback
+        for tag in soup.find_all(_NOISE_TAGS):
+            tag.decompose()
+
+        # Priority containers
+        for selector in (
+            "article",
+            "main",
+            '[role="main"]',
+            ".article-body",
+            "#content",
+        ):
+            container = soup.select_one(selector)
+            if container:
+                text = container.get_text(separator="\n\n", strip=True)
+                if len(text) >= _MIN_TEXT_LENGTH:
+                    break
+
+        if not text:
+            body = soup.find("body")
+            text = body.get_text(separator="\n\n", strip=True) if body else ""
+
+    # 3. Post-processing
+    text = _normalize_whitespace(text)
+    text = _deduplicate_paragraphs(text)
+
+    # 4. Canonical URL
+    canonical = ""
+    link_canon = soup.find("link", rel="canonical")
+    if link_canon and link_canon.get("href"):
+        canonical = link_canon["href"]
+    else:
+        # Fallback to metadata
+        meta_og = soup.find("meta", property="og:url")
+        if meta_og:
+            canonical = meta_og.get("content", "")
+
+    # 5. Deterministic check
+    is_article = check_is_article_deterministic(text, soup)
+
+    return text, canonical, is_article, soup
 
 
 def fetch_article_text(url: str) -> ScrapeResult:
@@ -112,7 +211,7 @@ def fetch_article_text(url: str) -> ScrapeResult:
         response = requests.get(url, headers=headers, timeout=_REQUEST_TIMEOUT)
         response.raise_for_status()
 
-        content_type = response.headers.get("Content-Type", "")
+        content_type = response.headers.get("Content-Type", "").lower()
         if "text/html" not in content_type and "text/plain" not in content_type:
             return ScrapeResult(
                 success=False,
@@ -120,21 +219,28 @@ def fetch_article_text(url: str) -> ScrapeResult:
                 url=url,
             )
 
-        soup = BeautifulSoup(response.content, "lxml")
-        text = _extract_text(soup)
+        text, canonical, is_article, soup = _extract_text_enhanced(
+            response.content, url
+        )
 
-        if len(text) < _MIN_TEXT_LENGTH:
+        if not text or len(text) < _MIN_TEXT_LENGTH:
             return ScrapeResult(
                 success=False,
                 error=(
-                    "Could not extract enough text from the page. "
+                    f"Could not extract enough text from the page (len={len(text) if text else 0}). "
                     "The site may block scraping or require JavaScript to render."
                 ),
                 url=url,
             )
 
         logger.info("Scraped %s: %d words extracted", url, len(text.split()))
-        return ScrapeResult(success=True, text=text, url=url)
+        return ScrapeResult(
+            success=True,
+            text=text,
+            url=url,
+            canonical_url=canonical,
+            is_article_deterministic=is_article,
+        )
 
     except requests.exceptions.ConnectionError:
         return ScrapeResult(
@@ -180,6 +286,7 @@ PORTAL_CONFIGS: dict[str, dict] = {
             "/technologie/",
         ],
         "min_title_len": 25,
+        "max_headlines": 10,
     },
     "Eurosport": {
         "homepage": "https://eurosport.tvn24.pl",
@@ -199,6 +306,7 @@ PORTAL_CONFIGS: dict[str, dict] = {
             "/motorcycle-racing/",
         ],
         "min_title_len": 30,
+        "max_headlines": 10,
     },
 }
 
@@ -220,6 +328,7 @@ def fetch_portal_headlines(portal_name: str) -> list[dict]:
     homepage = config["homepage"]
     path_fragments = config["article_path_fragments"]
     min_title_len = config["min_title_len"]
+    max_limit = config.get("max_headlines", _MAX_HEADLINES)
 
     try:
         headers = {"User-Agent": _USER_AGENT}
@@ -267,7 +376,7 @@ def fetch_portal_headlines(portal_name: str) -> list[dict]:
         seen_urls.add(full_url)
         results.append({"title": title, "url": full_url})
 
-        if len(results) >= _MAX_HEADLINES:
+        if len(results) >= max_limit:
             break
 
     logger.info(

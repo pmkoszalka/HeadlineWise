@@ -1,9 +1,22 @@
 streamlit==1.32.0
-pydantic==2.6.4
-google-generativeai==0.4.1
-openai>=1.14.0
+pydantic>=2.6.4
+google-genai>=1.0.0
+openai>=1.40.0
 python-dotenv==1.0.1
 pytest==8.1.1
 requests>=2.31.0
 beautifulsoup4>=4.12.0
 lxml>=5.0.0
+stop-words>=2018.7.23
+trafilatura>=1.8.1
+spacy>=3.7.0
+
+# --- Translation & ML ---
+pandas>=2.0.0
+scikit-learn>=1.3.0
+joblib>=1.3.0
+googletrans==4.0.0rc1
+httpx==0.13.3
+httpcore==0.9.1
+
+# Polish model: python -m spacy download pl_core_news_sm

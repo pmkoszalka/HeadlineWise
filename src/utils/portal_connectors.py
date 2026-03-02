@@ -46,6 +46,9 @@ class PortalConnector(ABC):
     #: Minimum title length to filter nav labels and category names
     min_title_len: int = 25
 
+    #: Maximum number of headlines to fetch
+    max_headlines: int = _MAX_HEADLINES
+
     def fetch_headlines(self) -> list[dict]:
         """
         Scrape the portal homepage and return article headlines.
@@ -95,7 +98,7 @@ class PortalConnector(ABC):
             seen.add(full_url)
             results.append({"title": title, "url": full_url})
 
-            if len(results) >= _MAX_HEADLINES:
+            if len(results) >= self.max_headlines:
                 break
 
         logger.info("[%s] %d articles found", self.name, len(results))
@@ -122,6 +125,7 @@ class TVN24Connector(PortalConnector):
         "/technologie/",
     ]
     min_title_len = 25
+    max_headlines = 10
 
     def _marker(self) -> None:
         pass
@@ -146,6 +150,7 @@ class EurosportConnector(PortalConnector):
         "/motorcycle-racing/",
     ]
     min_title_len = 30
+    max_headlines = 10
 
     def _marker(self) -> None:
         pass
