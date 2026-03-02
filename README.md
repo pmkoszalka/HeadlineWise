@@ -80,7 +80,7 @@ Projekt posiada narzędzia do pracy z danymi na wypadek chęci dotrenowania mode
 ### 1. Przygotowanie danych (Tłumaczenie)
 Projekt został przygotowany z użyciem zbiorów angielskich clickbaitów przetłumaczonych na polski. Istnieją tu dwa skrypty:
 
-- `translate_datasets.py`: Tłumaczy zbiory danych za pomocą darmowej biblioteki `googletrans`. Działa wolno ze względu na throttling IP przez serwery Google.
+- `translate_datasets.py`: Tłumaczy zbiory danych za pomocą darmowej biblioteki `deep-translator`. Działa wolno ze względu na throttling IP przez serwery Google.
 - `fill_translations_gemini.py`: Alternatywny skrypt korzystający z płatnego/szybszego API Gemini (`gemini-3-flash-preview`) do błyskawicznego spolszczenia brakujących próbek.
 
 ### 2. Trenowanie modelu

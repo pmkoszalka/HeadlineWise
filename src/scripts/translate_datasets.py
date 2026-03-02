@@ -1,7 +1,7 @@
 """
 translate_datasets.py
 ─────────────────────
-Translates 6,000 English headlines to Polish using googletrans.
+Translates 6,000 English headlines to Polish using deep-translator.
 
 Speed strategy: ThreadPoolExecutor with 5 workers.
 Each worker creates its own Translator instance and translates one
@@ -84,9 +84,7 @@ def prepare_dataset(data_dir: Path, out_path: Path) -> None:
 
     cb = df[df["target"] == 1].sample(n=3000, random_state=42)
     news = df[df["target"] == 0].sample(n=3000, random_state=42)
-    sampled = (
-        pd.concat([cb, news]).sample(frac=1, random_state=42).reset_index(drop=True)
-    )
+    sampled = pd.concat([cb, news]).sample(frac=1, random_state=42).reset_index(drop=True)
 
     sampled["text_pl"] = None
     if out_path.exists():
@@ -99,22 +97,19 @@ def prepare_dataset(data_dir: Path, out_path: Path) -> None:
 
 def translate_one(idx: int, text: str) -> tuple[int, str | None]:
     """Translate a single headline. Returns (index, translation_or_None)."""
-    from googletrans import Translator
+    from deep_translator import GoogleTranslator
 
-    translator = Translator()
+    translator = GoogleTranslator(source="auto", target="pl")
     backoff = INITIAL_BACKOFF
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            result = translator.translate(text, dest="pl")
-            translation = result.text
+            translation = translator.translate(text)
             time.sleep(random.uniform(*WORKER_SLEEP))
             return idx, translation
         except Exception as exc:
             err = str(exc).lower()
-            if any(
-                k in err for k in ("429", "too many", "rate", "exhausted", "blocked")
-            ):
+            if any(k in err for k in ("429", "too many", "rate", "exhausted", "blocked")):
                 log.warning(
                     "[row %d] Rate-limited (attempt %d/%d) — back off %.0fs",
                     idx,
@@ -148,11 +143,7 @@ def main():
         df["text_pl"] = None
     df["text_pl"] = df["text_pl"].astype(object)
 
-    todo = [
-        (i, str(df.at[i, "text"]))
-        for i in df.index
-        if not is_valid(df.at[i, "text_pl"])
-    ]
+    todo = [(i, str(df.at[i, "text"])) for i in df.index if not is_valid(df.at[i, "text_pl"])]
 
     if not todo:
         log.info("✅ All rows already translated.")
@@ -171,9 +162,7 @@ def main():
 
     with tqdm(total=len(todo), unit="row", dynamic_ncols=True) as pbar:
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = {
-                executor.submit(translate_one, idx, text): idx for idx, text in todo
-            }
+            futures = {executor.submit(translate_one, idx, text): idx for idx, text in todo}
 
             for future in as_completed(futures):
                 idx, translation = future.result()

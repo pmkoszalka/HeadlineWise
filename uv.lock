@@ -1,0 +1,22 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+
+[[package]]
+name = "headlinewise"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "pl-core-news-sm" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pl-core-news-sm", url = "https://github.com/explosion/spacy-models/releases/download/pl_core_news_sm-3.8.0/pl_core_news_sm-3.8.0-py3-none-any.whl" }]
+
+[[package]]
+name = "pl-core-news-sm"
+version = "3.8.0"
+source = { url = "https://github.com/explosion/spacy-models/releases/download/pl_core_news_sm-3.8.0/pl_core_news_sm-3.8.0-py3-none-any.whl" }
+wheels = [
+    { url = "https://github.com/explosion/spacy-models/releases/download/pl_core_news_sm-3.8.0/pl_core_news_sm-3.8.0-py3-none-any.whl", hash = "sha256:9b536db854b0cdb9132a74f68b392b8112ab6030f971bb03282462362a940dbb" },
+]
