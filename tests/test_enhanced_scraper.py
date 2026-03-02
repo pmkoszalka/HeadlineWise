@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 
 import pytest
 
@@ -22,7 +22,9 @@ class TestEnhancedScraperOffline:
         </body></html>
         """
 
-        text, canonical, is_article, _ = _extract_text_enhanced(html, "https://example.com/news/1")
+        text, canonical, is_article, _ = _extract_text_enhanced(
+            html, "https://example.com/news/1"
+        )
 
         assert text
         assert canonical == "https://example.com/news/1"
@@ -39,7 +41,9 @@ class TestEnhancedScraperOffline:
         </body></html>
         """
 
-        text, canonical, is_article, _ = _extract_text_enhanced(html, "https://example.com/")
+        text, canonical, is_article, _ = _extract_text_enhanced(
+            html, "https://example.com/"
+        )
 
         assert canonical == ""
         assert isinstance(text, str)
@@ -81,7 +85,9 @@ class TestEnhancedScraperLive:
             text_to_analyze,
             url=url,
             skip_assessment=True,
-            is_article_confident=scrape.is_article_deterministic if not force_short else False,
+            is_article_confident=scrape.is_article_deterministic
+            if not force_short
+            else False,
         )
 
         assert result.get("is_article", False) == expected_article

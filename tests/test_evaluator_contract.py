@@ -1,4 +1,4 @@
-﻿from types import SimpleNamespace
+from types import SimpleNamespace
 
 from src.core.headline_quality_evaluator_prompt import (
     HEADLINE_EVALUATOR_USER_PROMPT_TEMPLATE,
@@ -52,7 +52,9 @@ class TestEvaluatorParsingContract:
     def test_wrong_item_count_rejected_in_evaluator_flow(self, monkeypatch):
         monkeypatch.setattr(
             "src.services.headline_quality_evaluator._evaluate_openai",
-            lambda *args, **kwargs: LLMEvalResponse(items=[_mk_item(i) for i in range(4)]),
+            lambda *args, **kwargs: LLMEvalResponse(
+                items=[_mk_item(i) for i in range(4)]
+            ),
         )
 
         captured = {}

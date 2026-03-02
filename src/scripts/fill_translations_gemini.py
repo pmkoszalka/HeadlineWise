@@ -55,7 +55,11 @@ def translate_batch(client, texts: list[str], backoff: float) -> tuple[list, flo
                 model=MODEL,
                 contents=prompt,
             )
-            lines = [l.strip() for l in response.text.strip().split("\n") if l.strip()]
+            lines = [
+                line.strip()
+                for line in response.text.strip().split("\n")
+                if line.strip()
+            ]
 
             if len(lines) == len(texts):
                 return lines, 4.5  # reset backoff on success

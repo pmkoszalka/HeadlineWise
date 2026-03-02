@@ -1,4 +1,4 @@
-﻿"""
+"""
 tests/test_headline_assessment.py
 
 Unit + integration tests for the headline quality assessment feature.

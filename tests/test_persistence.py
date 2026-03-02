@@ -1,4 +1,4 @@
-﻿import json
+import json
 import threading
 from pathlib import Path
 
@@ -39,7 +39,9 @@ def test_save_to_persistent_cache_converts_model_dump(tmp_path, monkeypatch):
     assert loaded["k2"] == {"obj": {"value": 7}}
 
 
-def test_atomic_write_failure_logs_and_preserves_previous_cache(tmp_path, monkeypatch, caplog):
+def test_atomic_write_failure_logs_and_preserves_previous_cache(
+    tmp_path, monkeypatch, caplog
+):
     telemetry_dir = tmp_path / "telemetry"
     cache_file = telemetry_dir / "result_cache.json"
     telemetry_dir.mkdir(parents=True, exist_ok=True)

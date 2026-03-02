@@ -1,4 +1,4 @@
-﻿"""
+"""
 Prompt templates for the headline quality evaluator LLM call.
 """
 
