@@ -36,6 +36,7 @@ MODEL = "gemini-3-flash-preview"
 
 
 def is_valid(value) -> bool:
+    """Check if a translated string is valid and not empty or NaN."""
     if pd.isna(value):
         return False
     return str(value).strip() not in ("", "None", "nan")
@@ -110,6 +111,7 @@ def translate_batch(client, texts: list[str], backoff: float) -> tuple[list, flo
 
 
 def main():
+    """Main entrypoint for filling missing translations using Gemini API."""
     from google import genai
 
     api_key = os.environ.get("GEMINI_API_KEY")

@@ -47,7 +47,7 @@ Artykuł:
 Jeśli TO jest artykuł, zoptymalizuj dodatkowo jego opakowanie (nagłówki, lead, SEO, posty).
 Jeśli NIE jest artykułem, powiedz o tym.
 
-Zwróć WYŁĄCZNIE surowy JSON – bez markdown, bez dodatkowego tekstu.
+Zwróć WYŁĄCZNIE surowy JSON - bez markdown, bez dodatkowego tekstu.
 Pisz WYŁĄCZNIE po polsku.
 """
 
@@ -59,7 +59,7 @@ Tekst strony (pierwsze {char_limit} znaków):
 {page_text}
 \"\"\"
 
-Krok 1 – Czy to artykuł informacyjny? Odpowiedz ściśle jedną z opcji:
+Krok 1 - Czy to artykuł informacyjny? Odpowiedz ściśle jedną z opcji:
 
   A) To JEST artykuł → zwróć ten JSON:
   {{
@@ -80,11 +80,11 @@ Krok 1 – Czy to artykuł informacyjny? Odpowiedz ściśle jedną z opcji:
   }}
 
 Tonacje nagłówków w opcji A (KAŻDY musi być bardziej klikowy i angażujący niż typowy nagłówek):
-  1. Pilny – natychmiastowa ważność, czytelnik musi kliknąć TERAZ
-  2. Pytanie – prowokujące, intrygujące pytanie na które chce się znać odpowiedź
-  3. Liczbowy – konkretna liczba lub statystyka z tekstu (liczby przyciągają uwagę)
-  4. Luka ciekawości – naprowadza bez pełnego ujawnienia, tworzy napięcie
-  5. Bezpośredni – zwięzły, ale sformułowany jako ważna wiadomość
+  1. Pilny - natychmiastowa ważność, czytelnik musi kliknąć TERAZ
+  2. Pytanie - prowokujące, intrygujące pytanie na które chce się znać odpowiedź
+  3. Liczbowy - konkretna liczba lub statystyka z tekstu (liczby przyciągają uwagę)
+  4. Luka ciekawości - naprowadza bez pełnego ujawnienia, tworzy napięcie
+  5. Bezpośredni - zwięzły, ale sformułowany jako ważna wiadomość
 
 Zwróć surowy JSON. Pisz wyłącznie po polsku.
 """

@@ -113,6 +113,8 @@ class PortalConnector(ABC):
 
 
 class TVN24Connector(PortalConnector):
+    """Retrieves news articles from the TVN24 portal."""
+
     name = "TVN24"
     homepage = "https://tvn24.pl"
     article_path_fragments = [
@@ -132,6 +134,8 @@ class TVN24Connector(PortalConnector):
 
 
 class EurosportConnector(PortalConnector):
+    """Retrieves sports articles from the Eurosport TVN24 portal."""
+
     name = "Eurosport"
     homepage = "https://eurosport.tvn24.pl"
     article_path_fragments = [

@@ -113,7 +113,7 @@ class HeuristicResult:
 
     headline_index: int
     flags: List[str] = field(default_factory=list)
-    seo_fit_score: int = 50  # 0–100, heuristic only
+    seo_fit_score: int = 50  # 0-100, heuristic only
     clickbait_score: int = 0  # 0-100, local ML model probability
 
 
@@ -222,7 +222,7 @@ def extract_keyword_candidates(
 
 def compute_seo_fit_score(headline: str, keywords: Dict[str, float]) -> int:
     """
-    Score 0–100 based on weighted keywords (lemmas) present in the headline.
+    Score 0-100 based on weighted keywords (lemmas) present in the headline.
     Returns 50 as neutral when no keywords are available.
 
     The headline is lemmatized before comparison so correctly inflected

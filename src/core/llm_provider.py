@@ -45,8 +45,11 @@ _HEADLINE_STYLES = ["Pilny", "Pytanie", "Liczbowy", "Luka ciekawości", "Bezpoś
 
 
 class LLMProvider(ABC):
+    """Abstract base class for LLM content generation and assessment providers."""
+
     @abstractmethod
     def generate_packaging(self, article_text: str) -> Optional[PackagingOutput]:
+        """Generate packaging based on provided article text."""
         pass
 
     @abstractmethod
@@ -142,6 +145,8 @@ def run_headline_assessment(
 
 
 class OpenAIProvider(LLMProvider):
+    """Implementation of LLMProvider using OpenAI's API models."""
+
     def __init__(
         self,
         generation_model: str = "gpt-5-nano-2025-08-07",
@@ -161,6 +166,7 @@ class OpenAIProvider(LLMProvider):
     def generate_packaging(
         self, article_text: str, skip_assessment: bool = False
     ) -> Optional[PackagingOutput]:
+        """Generate article packaging and optionally assess headline quality."""
         if not self.client:
             logger.error("OpenAI client not initialized (missing API key).")
             return None
@@ -215,6 +221,7 @@ class OpenAIProvider(LLMProvider):
         skip_assessment: bool = False,
         is_article_confident: bool = False,
     ) -> dict:
+        """Analyze scraped HTML text, determining if it is an article and generating content."""
         if not self.client:
             return {
                 "is_article": is_article_confident,
@@ -349,6 +356,7 @@ class GeminiProvider(LLMProvider):
     def generate_packaging(
         self, article_text: str, skip_assessment: bool = False
     ) -> Optional["PackagingOutput"]:
+        """Generate headlines, schema elements, and social media posts."""
         if not self._configured:
             return None
 
@@ -374,6 +382,7 @@ class GeminiProvider(LLMProvider):
     def assess_packaging(
         self, result: "PackagingOutput", article_text: str, source_mode: str = "paste"
     ) -> "PackagingOutput":
+        """Assess the quality of generated headlines and attach scores to the result."""
         return run_headline_assessment(
             result=result,
             article_text=article_text,
@@ -389,6 +398,7 @@ class GeminiProvider(LLMProvider):
         skip_assessment: bool = False,
         is_article_confident: bool = False,
     ) -> dict:
+        """Classify page content and automatically generate packaging if it's an article."""
         if not self._configured:
             return {
                 "is_article": is_article_confident,
@@ -423,6 +433,7 @@ class GeminiProvider(LLMProvider):
     def assess_url_result(
         self, result_dict: dict, page_text: str, url: str = ""
     ) -> dict:
+        """Assess parsed headlines retrieved from a URL."""
         source_mode = "portal" if url else "url"
         if result_dict.get("is_article") and result_dict.get("headlines"):
             try:
@@ -453,6 +464,7 @@ class MockProvider(LLMProvider):
     """Used for testing UI without API calls."""
 
     def generate_packaging(self, article_text: str) -> Optional[PackagingOutput]:
+        """Return static mock packaging without making API calls."""
         time.sleep(1.5)  # Simulate network latency
         data = {
             "headlines": [

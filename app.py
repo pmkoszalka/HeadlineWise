@@ -59,6 +59,7 @@ if "pending_portal_assessment" not in st.session_state:
 
 
 def load_dummy():
+    """Load a predefined dummy article into the text input area."""
     st.session_state.article_input = DUMMY_ARTICLE
 
 
@@ -410,7 +411,7 @@ tab_paste, tab_url, tab_portal = st.tabs(
 )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1 – Paste Article
+# TAB 1 - Paste Article
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_paste:
     col_left, col_right = st.columns([1, 1], gap="large")
@@ -450,7 +451,7 @@ with tab_paste:
                     st.session_state.pending_paste_assessment = None
                     st.success("✅ Wynik z cache.")
                 else:
-                    # Phase 1 – generate packaging (fast, no assessment yet)
+                    # Phase 1 - generate packaging (fast, no assessment yet)
                     with st.spinner("Przygotowuję propozycje..."):
                         start_time = time.time()
                         provider, model_display = _get_provider()
@@ -488,7 +489,7 @@ with tab_paste:
         else:
             st.info("Wklej artykuł i kliknij 'Generuj sugestie', aby zobaczyć wyniki.")
 
-        # Phase 2 – blocking call goes BELOW the already-rendered packaging
+        # Phase 2 - blocking call goes BELOW the already-rendered packaging
         if _paste_pending:
             _pending_result, _pending_article = (
                 st.session_state.pending_paste_assessment
@@ -508,7 +509,7 @@ with tab_paste:
             st.rerun()  # re-render with assessment scores
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 – Scrape from URL
+# TAB 2 - Scrape from URL
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_url:
     col_left_url, col_right_url = st.columns([1, 1], gap="large")
@@ -530,14 +531,14 @@ with tab_url:
             else:
                 url_key = url_input.strip()
                 if url_key in st.session_state.article_cache:
-                    # Cache hit – instant result, no LLM call needed
+                    # Cache hit - instant result, no LLM call needed
                     st.session_state.url_result = st.session_state.article_cache[
                         url_key
                     ]
                     st.session_state.pending_url_assessment = None
                     st.success("✅ Wynik z cache — analiza natychmiastowa.")
                 else:
-                    # Phase 1 – Scrape
+                    # Phase 1 - Scrape
                     with st.spinner("⏳ Pobieranie strony..."):
                         scrape = fetch_article_text(url_key)
 
@@ -551,7 +552,7 @@ with tab_url:
                             "Wysyłam do modelu…"
                         )
 
-                        # Phase 1 – LLM packaging
+                        # Phase 1 - LLM packaging
                         with st.spinner("🤖 Przygotowuję propozycje..."):
                             start_time = time.time()
                             provider, model_display = _get_provider()
@@ -608,7 +609,7 @@ with tab_url:
                 "Podaj adres URL i kliknij 'Pobierz i przeanalizuj', aby rozpocząć."
             )
 
-        # Phase 2 – blocking call goes BELOW the already-rendered packaging
+        # Phase 2 - blocking call goes BELOW the already-rendered packaging
         if _url_pending:
             _r, _txt, _url = st.session_state.pending_url_assessment
             provider, _ = _get_provider()
@@ -621,7 +622,7 @@ with tab_url:
             st.rerun()  # re-render with assessment scores
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 – Portal Browser
+# TAB 3 - Portal Browser
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_portal:
     col_left_p, col_right_p = st.columns([1, 1], gap="large")
@@ -667,14 +668,14 @@ with tab_portal:
 
                     article_url = article["url"]
                     if article_url in st.session_state.article_cache:
-                        # Cache hit – show instantly
+                        # Cache hit - show instantly
                         st.session_state.portal_result = st.session_state.article_cache[
                             article_url
                         ]
                         st.session_state.pending_portal_assessment = None
                         st.rerun()
                     else:
-                        # Phase 1 – scrape
+                        # Phase 1 - scrape
                         with st.spinner("Pobieram artykuł…"):
                             scrape = fetch_article_text(article_url)
 
@@ -683,7 +684,7 @@ with tab_portal:
                                 f"❌ Nie udało się pobrać artykułu: {scrape.error}"
                             )
                         else:
-                            # Phase 1 – LLM packaging
+                            # Phase 1 - LLM packaging
                             with st.spinner("🤖 Przygotowuję propozycje…"):
                                 start = time.time()
                                 provider, model_display = _get_provider()
@@ -744,7 +745,7 @@ with tab_portal:
         else:
             st.info("Wybierz portal i kliknij 'Pobierz nagłówki', aby rozpocząć.")
 
-        # Phase 2 – blocking call goes BELOW the already-rendered packaging
+        # Phase 2 - blocking call goes BELOW the already-rendered packaging
         if _portal_pending:
             _r, _txt, _url = st.session_state.pending_portal_assessment
             provider, _ = _get_provider()

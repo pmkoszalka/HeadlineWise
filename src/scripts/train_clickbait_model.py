@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def train_model() -> None:
+    """Train and evaluate the logistic regression clickbait model."""
     # ── 1. Setup paths ───────────────────────────────────────────────────────
     project_root = Path(__file__).parent.parent.parent
     data_dir = project_root / "data"

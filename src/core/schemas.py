@@ -3,12 +3,14 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class SocialPosts(BaseModel):
+    """Container for social media post suggestions."""
+
     x_twitter: str = Field(..., description="Short, engaging post for X/Twitter")
     facebook: str = Field(..., description="Informative post for Facebook")
 
 
 class HeadlineScores(BaseModel):
-    """Heuristic + LLM-derived quality scores for a single headline (all 0–100)."""
+    """Heuristic + LLM-derived quality scores for a single headline (all 0-100)."""
 
     ctr_potential: int = Field(
         ..., ge=0, le=100, description="Heuristic proxy for click-through potential"
@@ -50,6 +52,7 @@ class HeadlineAssessmentItem(BaseModel):
     @field_validator("risk_flags")
     @classmethod
     def validate_flags(cls, v: List[str]) -> List[str]:
+        """Validate and deduplicate risk flags, defaulting to ['none'] if empty."""
         # Remove duplicates while preserving order
         seen: set = set()
         deduped = [f for f in v if not (f in seen or seen.add(f))]  # type: ignore[func-returns-value]
@@ -57,6 +60,8 @@ class HeadlineAssessmentItem(BaseModel):
 
 
 class PackagingOutput(BaseModel):
+    """The complete result package containing headlines, summary, SEO, and social info."""
+
     headlines: List[str] = Field(
         ...,
         min_length=5,

@@ -44,6 +44,8 @@ _MIN_TEXT_LENGTH = 300  # Increased for better quality threshold
 
 @dataclass
 class ScrapeResult:
+    """Represents the results of scraping an article page."""
+
     success: bool
     text: str = ""
     error: str = ""

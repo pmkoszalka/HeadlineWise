@@ -11,7 +11,7 @@ IP bans (each worker throttled individually).
 At ~1.5s per headline / 5 workers → ~300 headlines/min → ~20 min total.
 
 Safety:
-  • Each worker sleeps 0.5–1.0s after each request
+  • Each worker sleeps 0.5-1.0s after each request
   • On error: exponential back-off per worker (5s → 10s → 20s… cap 120s)
   • Checkpoint to disk every 100 translated rows
   • Idempotent: already-translated rows are skipped on re-run
@@ -44,6 +44,7 @@ CHECKPOINT_EVERY = 100  # save to disk every N translated rows
 
 
 def map_label(val) -> int:
+    """Map string or numeric labels to a binary integer (1 for clickbait, 0 for news)."""
     if isinstance(val, (int, float)):
         return 1 if val > 0 else 0
     if isinstance(val, str):
@@ -56,12 +57,14 @@ def map_label(val) -> int:
 
 
 def is_valid(value) -> bool:
+    """Check if a translated string is valid and not empty or NaN."""
     if pd.isna(value):
         return False
     return str(value).strip() not in ("", "None", "nan")
 
 
 def prepare_dataset(data_dir: Path, out_path: Path) -> None:
+    """Combine and deduplicate raw CSV chunks into a balanced 6k-row dataset."""
     if out_path.exists() and len(pd.read_csv(out_path)) >= 6000:
         log.info("Dataset already has 6,000 rows — skipping preparation.")
         return
@@ -84,7 +87,9 @@ def prepare_dataset(data_dir: Path, out_path: Path) -> None:
 
     cb = df[df["target"] == 1].sample(n=3000, random_state=42)
     news = df[df["target"] == 0].sample(n=3000, random_state=42)
-    sampled = pd.concat([cb, news]).sample(frac=1, random_state=42).reset_index(drop=True)
+    sampled = (
+        pd.concat([cb, news]).sample(frac=1, random_state=42).reset_index(drop=True)
+    )
 
     sampled["text_pl"] = None
     if out_path.exists():
@@ -109,7 +114,9 @@ def translate_one(idx: int, text: str) -> tuple[int, str | None]:
             return idx, translation
         except Exception as exc:
             err = str(exc).lower()
-            if any(k in err for k in ("429", "too many", "rate", "exhausted", "blocked")):
+            if any(
+                k in err for k in ("429", "too many", "rate", "exhausted", "blocked")
+            ):
                 log.warning(
                     "[row %d] Rate-limited (attempt %d/%d) — back off %.0fs",
                     idx,
@@ -132,6 +139,7 @@ def translate_one(idx: int, text: str) -> tuple[int, str | None]:
 
 
 def main():
+    """Main entrypoint for dataset translation process mapping English to Polish."""
     project_root = Path(__file__).parent.parent.parent
     data_dir = project_root / "data"
     out_path = data_dir / "train_pl.csv"
@@ -143,7 +151,11 @@ def main():
         df["text_pl"] = None
     df["text_pl"] = df["text_pl"].astype(object)
 
-    todo = [(i, str(df.at[i, "text"])) for i in df.index if not is_valid(df.at[i, "text_pl"])]
+    todo = [
+        (i, str(df.at[i, "text"]))
+        for i in df.index
+        if not is_valid(df.at[i, "text_pl"])
+    ]
 
     if not todo:
         log.info("✅ All rows already translated.")
@@ -162,7 +174,9 @@ def main():
 
     with tqdm(total=len(todo), unit="row", dynamic_ncols=True) as pbar:
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = {executor.submit(translate_one, idx, text): idx for idx, text in todo}
+            futures = {
+                executor.submit(translate_one, idx, text): idx for idx, text in todo
+            }
 
             for future in as_completed(futures):
                 idx, translation = future.result()
