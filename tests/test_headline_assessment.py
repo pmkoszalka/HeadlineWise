@@ -24,7 +24,7 @@ from src.services.headline_quality_heuristics import (
 from src.services.headline_quality_merge import _merge_flags, merge_assessments
 
 # ---------------------------------------------------------------------------
-# Heuristics â€” unit tests
+# Heuristics unit tests
 # ---------------------------------------------------------------------------
 
 
@@ -51,7 +51,7 @@ class TestIsTooLong:
         assert not is_too_long("Fed raises rates", max_chars=80, max_words=14)
 
     def test_exactly_at_char_limit_ok(self):
-        # 79 chars â€” under limit
+        # 79 chars under limit
         headline = "a" * 79
         assert not is_too_long(headline, max_chars=80, max_words=14)
 
@@ -86,12 +86,12 @@ class TestStyleViolations:
         )
 
     def test_normal_headline_no_flags(self):
-        assert not check_style_violations("ZwykĹ‚y nagĹ‚Ăłwek bez krzyku")
+        assert not check_style_violations("Zwykły nagłówek bez krzyku")
 
 
 class TestDetectDuplicateLikeHeadlines:
     def test_identical_headlines_both_flagged(self):
-        headlines = ["Fed podnosi stopy", "Fed podnosi stopy", "CoĹ› innego"]
+        headlines = ["Fed podnosi stopy", "Fed podnosi stopy", "Coś innego"]
         result = detect_duplicate_like_headlines(headlines, threshold=0.78)
         assert result[0] is True
         assert result[1] is True
@@ -100,7 +100,7 @@ class TestDetectDuplicateLikeHeadlines:
     def test_very_similar_both_flagged(self):
         headlines = [
             "Fed podnosi stopy procentowe o 0,5%",
-            "Fed podnosi stopy procentowe o 0,5% dziĹ›",
+            "Fed podnosi stopy procentowe o 0,5% dziś",
         ]
         result = detect_duplicate_like_headlines(headlines, threshold=0.78)
         assert result[0] is True
@@ -109,8 +109,8 @@ class TestDetectDuplicateLikeHeadlines:
     def test_dissimilar_headlines_not_flagged(self):
         headlines = [
             "Inflacja bije rekordy w Polsce",
-            "Premier ogĹ‚asza nowe inwestycje",
-            "Katastrofa ekologiczna na BaĹ‚tyku",
+            "Premier ogłasza nowe inwestycje",
+            "Katastrofa ekologiczna na Bałtyku",
         ]
         result = detect_duplicate_like_headlines(headlines, threshold=0.78)
         assert not any(result.values())
@@ -141,7 +141,7 @@ class TestExtractKeywordCandidates:
         assert keywords["inflacja"] == 2.0
 
     def test_returns_dict(self):
-        result = extract_keyword_candidates("test artykuĹ‚", seo_tags=["tag"])
+        result = extract_keyword_candidates("test artykuł", seo_tags=["tag"])
         assert isinstance(result, dict)
 
 
@@ -167,8 +167,8 @@ class TestComputeSeoFitScore:
         # SEO tag (2.0) hit vs text word (1.0) hit in different headlines.
         # _lemmatize lowercases all: 'Fed' in headline -> lemma 'fed'
         keywords = {"fed": 2.0, "rynek": 1.0}
-        score_fed = compute_seo_fit_score("CzeĹ›Ä‡ Fed dzisiaj", keywords)
-        score_rynki = compute_seo_fit_score("CzeĹ›Ä‡ rynkach dzisiaj", keywords)
+        score_fed = compute_seo_fit_score("Cześć Fed dzisiaj", keywords)
+        score_rynki = compute_seo_fit_score("Cześć rynkach dzisiaj", keywords)
         assert score_fed > score_rynki
 
     def test_partial_coverage_medium_score(self):
@@ -186,7 +186,7 @@ class TestComputeSeoFitScore:
 
 class TestIsTooVague:
     def test_no_keyword_match_returns_true(self):
-        assert is_too_vague("CoĹ› siÄ™ wydarzyĹ‚o", {"inflacja": 1.0})
+        assert is_too_vague("Coś się™ wydarzyło", {"inflacja": 1.0})
 
     def test_keyword_present_returns_false(self):
         assert not is_too_vague("Fed podnosi stopy", {"fed": 1.0})
@@ -204,11 +204,11 @@ class TestAssessHeadlineHeuristics:
 
     def _make_headlines(self):
         return [
-            "Fed podnosi stopy procentowe â€” rynki reagujÄ… spadkami",
-            "Inflacja bije rekordy w Polsce po raz trzeci z rzÄ™du",
-            "Premier ogĹ‚asza nowy pakiet stymulacyjny dla gospodarki",
-            "CoĹ› siÄ™ staĹ‚o i to waĹĽne dla wszystkich mieszkaĹ„cĂłw kraju",
-            "Fed podnosi stopy procentowe â€” rynki reagujÄ… spadkami",  # duplicate of [0]
+            "Fed podnosi stopy procentowe rynki reagują… spadkami",
+            "Inflacja bije rekordy w Polsce po raz trzeci z rzędu",
+            "Premier ogłasza nowy pakiet stymulacyjny dla gospodarki",
+            "Coś się stało i to wanie dla wszystkich mieszkańców kraju",
+            "Fed podnosi stopy procentowe rynki reagują… spadkami",
         ]
 
     def test_returns_one_result_per_headline(self):
@@ -242,9 +242,9 @@ class TestAssessHeadlineHeuristics:
 
     def test_banned_phrase_flagged(self):
         results = assess_headline_heuristics(
-            headlines=["SzokujÄ…ce wiadomoĹ›ci z rynkĂłw"],
+            headlines=["Szokuję…ce wiadomości z rynków"],
             article_text="rynki finanse gospodarka",
-            banned_phrases=["szokujÄ…ce"],
+            banned_phrases=["szokuję…ce"],
         )
         assert "banned_phrase_detected" in results[0].flags
 
@@ -259,7 +259,7 @@ class TestAssessHeadlineHeuristics:
 
 
 # ---------------------------------------------------------------------------
-# Merge â€” unit tests
+# Merge unit tests
 # ---------------------------------------------------------------------------
 
 
@@ -381,7 +381,7 @@ class TestMergeAssessments:
 
 
 # ---------------------------------------------------------------------------
-# Integration â€” MockProvider
+# Integration MockProvider
 # ---------------------------------------------------------------------------
 
 
@@ -415,7 +415,7 @@ class TestMockProviderIntegration:
 
     def test_analyze_url_content_has_assessment(self):
         provider = MockProvider()
-        long_text = "ArtykuĹ‚ o inflacji i stopach procentowych. " * 20
+        long_text = "Artykuł o inflacji i stopach procentowych. " * 20
         result = provider.analyze_url_content(long_text, url="http://example.com")
         assert result["is_article"] is True
         assert "headline_assessment" in result
@@ -429,7 +429,7 @@ class TestMockProviderIntegration:
 
 
 # ---------------------------------------------------------------------------
-# Lemmatization â€” only run when spaCy model is available
+# Lemmatization only run when spaCy model is available
 # ---------------------------------------------------------------------------
 
 
@@ -449,12 +449,12 @@ class TestLemmatization:
 
         if _get_spacy_nlp() is None:
             pytest.skip(
-                "spaCy pl_core_news_sm not available â€” skipping lemmatization tests"
+                "spaCy pl_core_news_sm not available skipping lemmatization tests"
             )
 
     def test_inflected_verb_seo_tag_matches_headline(self):
         """
-        SEO tag 'biegaÄ‡' (to run, infinitive) should match 'biegaĹ‚' in headline.
+        SEO tag 'biegaę‡' (to run, infinitive) should match 'biegał' in headline.
         Without lemmatization the score would be 10 (no match).
         """
         self._require_spacy()
@@ -463,8 +463,8 @@ class TestLemmatization:
             extract_keyword_candidates,
         )
 
-        keywords = extract_keyword_candidates("", seo_tags=["biegaÄ‡"])
-        score = compute_seo_fit_score("MaratoĹ„czyk biegaĹ‚ przez caĹ‚Ä… noc", keywords)
+        keywords = extract_keyword_candidates("", seo_tags=["biegać"])
+        score = compute_seo_fit_score("Maratończyk biegał przez całą noc", keywords)
         assert score > 10, f"Expected lemma match, got score={score}"
 
     def test_inflected_noun_not_too_vague(self):
@@ -479,7 +479,7 @@ class TestLemmatization:
         )
 
         keywords = extract_keyword_candidates("", seo_tags=["inflacja"])
-        assert not is_too_vague("Wzrost inflacji niepokoi ekonomistĂłw", keywords), (
+        assert not is_too_vague("Wzrost inflacji niepokoi ekonomistów", keywords), (
             "Inflected noun 'inflacji' should not trigger too_vague"
         )
 
@@ -487,7 +487,7 @@ class TestLemmatization:
         """
         Article text containing 'inflacji' (genitive of inflacja) should
         contribute the lemma 'inflacja' to keywords, and headline
-        containing 'inflacjÄ…' (instrumental) should match the same lemma.
+        containing 'inflację…' (instrumental) should match the same lemma.
         """
         self._require_spacy()
         from src.services.headline_quality_heuristics import (
