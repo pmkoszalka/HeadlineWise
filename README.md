@@ -55,6 +55,36 @@ Aplikacja działa w Pythonie 3.11+ i wymaga środowiska wspierającego scikit-le
    python -m spacy download pl_core_news_sm
    ```
 
+### Alternatywnie — instalacja przez `uv` (szybciej)
+
+Jeśli masz zainstalowany [`uv`](https://github.com/astral-sh/uv):
+
+```bash
+uv pip install -r requirements.txt
+# lub z pyproject.toml (polski model spaCy wbudowany):
+uv sync
+```
+
+---
+
+## 🧪 Testy i jakość kodu
+
+### Uruchomienie testów
+
+```bash
+pytest
+```
+
+Testy jednostkowe obejmują scraper, evaluator, schemat danych i cache telemetrii.
+
+### Linter
+
+```bash
+ruff check
+```
+
+Ruff sprawdza formatowanie i spójność kodu. Konfiguracja w sekcji `[tool.ruff.lint]` w `pyproject.toml`.
+
 ---
 
 ## 🏃 Uruchomienie Aplikacji (UI Streamlit)

@@ -72,13 +72,16 @@ def _get_provider():
 
 def _render_flag_chip(flag: str) -> str:
     """Return an emoji-prefixed flag label for display."""
-    if flag == "none":
+    if flag == "brak":
         return "🟢 brak ryzyk"
     labels = {
-        "clickbait_risk": "🔴 clickbait risk",
-        "possible_unsupported_claim": "🔴 niezweryfikowane twierdzenie",
-        "too_vague": "🟡 zbyt ogólny",
-        "too_long": "🟡 zbyt długi",
+        "ryzyko_clickbait": "🔴 ryzyko clickbait",
+        "nieweryfikowalny_fakt": "🔴 niezweryfikowane twierdzenie",
+        "zbyt_ogolny": "🟡 zbyt ogólny",
+        "zbyt_dlugi": "🟡 zbyt długi",
+        "krzyk_wersalikami": "🟠 krzyk wersalikami",
+        "nadmierna_interpunkcja": "🟠 nadmierna interpunkcja",
+        "nadmierne_wielokropki": "🟠 nadmierne wielokropki",
         "banned_phrase_detected": "🔴 zakazana fraza",
         "duplicate_like_other_headline": "🟠 podobny do innego",
     }

@@ -6,14 +6,14 @@ EVALUATOR_PROMPT_VERSION = "v1.1"
 
 # Allowed risk flags - keep this list stable for UI/log consistency
 ALLOWED_FLAGS = [
-    "clickbait_risk",
-    "possible_unsupported_claim",
-    "too_vague",
-    "too_long",
-    "shouting_detected",
-    "excessive_punctuation",
-    "excessive_ellipsis",
-    "none",
+    "ryzyko_clickbait",
+    "nieweryfikowalny_fakt",
+    "zbyt_ogolny",
+    "zbyt_dlugi",
+    "krzyk_wersalikami",
+    "nadmierna_interpunkcja",
+    "nadmierne_wielokropki",
+    "brak",
 ]
 
 HEADLINE_EVALUATOR_SYSTEM_PROMPT = """\
@@ -25,8 +25,8 @@ ZASADY:
 2. Dla kazdego naglowka zwroc score'y int 0-100 i flagi ryzyk.
 3. ctr_potential to heurystyczny PROXY klikalnosci, NIE rzeczywisty CTR.
 4. Rationale: jedno zdanie po polsku, max 200 znakow.
-5. Dopuszczalne flagi ryzyk: clickbait_risk, possible_unsupported_claim, too_vague, too_long.
-   Jesli brak ryzyk -> [\"none\"]. Bez duplikatow w liscie.
+5. Dopuszczalne flagi ryzyk: ryzyko_clickbait, nieweryfikowalny_fakt, zbyt_ogolny, zbyt_dlugi, krzyk_wersalikami, nadmierna_interpunkcja, nadmierne_wielokropki.
+   Jesli brak ryzyk -> [\"brak\"]. Bez duplikatow w liscie.
 6. Zwroc WYLACZNIE surowy JSON. Zadnego markdown, zadnych komentarzy.
 
 DEFINICJE SCORE'OW (skala 0-100):

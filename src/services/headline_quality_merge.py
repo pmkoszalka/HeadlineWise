@@ -83,7 +83,7 @@ def merge_assessments(
         merged_flags = _merge_flags(hr.flags, llm_flags)
 
         # Apply Penalties
-        if "too_long" in merged_flags:
+        if "zbyt_dlugi" in merged_flags:
             ctr = min(ctr, 50)
             clarity = min(clarity, 50)
 
@@ -92,7 +92,7 @@ def merge_assessments(
             clarity = min(clarity, 20)
             seo_fit = min(seo_fit, 20)
 
-        if "clickbait_risk" in merged_flags:
+        if "ryzyko_clickbait" in merged_flags:
             # We also apply a continuous penalty based on the severity
             # hr.clickbait_score is 0-100 indicating the probability of clickbait.
             # If it's flagged (>75), we penalize it proportionally.
@@ -101,8 +101,8 @@ def merge_assessments(
             ctr = max(0, ctr)
 
         if (
-            "shouting_detected" in merged_flags
-            or "excessive_punctuation" in merged_flags
+            "krzyk_wersalikami" in merged_flags
+            or "nadmierna_interpunkcja" in merged_flags
         ):
             ctr = min(ctr, 60)
 

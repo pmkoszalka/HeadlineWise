@@ -148,15 +148,15 @@ def check_style_violations(headline: str) -> List[str]:
     # 1. Shouting (too many ALL CAPS words > 3 chars)
     words = re.findall(r"\b[A-ZĄĆĘŁŃÓŚŹŻ]{4,}\b", headline)
     if words:
-        flags.append("shouting_detected")
+        flags.append("krzyk_wersalikami")
 
     # 2. Excessive punctuation (!!!, ???, ...)
     if "!!!" in headline or "???" in headline:
-        flags.append("excessive_punctuation")
+        flags.append("nadmierna_interpunkcja")
 
     # 3. Excessive ellipsis
     if "...." in headline:
-        flags.append("excessive_ellipsis")
+        flags.append("nadmierne_wielokropki")
 
     return flags
 
@@ -339,7 +339,7 @@ def assess_headline_heuristics(
         flags: List[str] = []
 
         if is_too_long(headline):
-            flags.append("too_long")
+            flags.append("zbyt_dlugi")
 
         if banned_phrases and contains_banned_phrase(headline, banned_phrases):
             flags.append("banned_phrase_detected")
@@ -348,7 +348,7 @@ def assess_headline_heuristics(
             flags.append("duplicate_like_other_headline")
 
         if is_too_vague(headline, keywords):
-            flags.append("too_vague")
+            flags.append("zbyt_ogolny")
 
         # Linguistic / style checks
         style_flags = check_style_violations(headline)
@@ -358,7 +358,7 @@ def assess_headline_heuristics(
         clickbait_score = compute_ml_clickbait_score(headline)
 
         if clickbait_score > 75:
-            flags.append("clickbait_risk")
+            flags.append("ryzyko_clickbait")
 
         results.append(
             HeuristicResult(
