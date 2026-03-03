@@ -29,28 +29,19 @@ Aplikacja działa w Pythonie 3.11+ i wymaga środowiska wspierającego scikit-le
 
 1. **Sklonuj repozytorium**
 
-2. **Przygotuj wirtualne środowisko (opcjonalnie, ale zalecane):**
-   ```bash
-   python -m venv venv
-   # Windows:
-   .\venv\Scripts\activate
-   # Linux/Mac:
-   source venv/bin/activate
-   ```
-
-3. **Zainstaluj zależności:**
+2. **Zainstaluj zależności:**
    Plik `requirements.txt` instaluje wszystkie pakiety potrzebne dla Streamlit, ML, LLM i scrapowania.
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Klucz API Gemini:**
+3. **Klucz API Gemini:**
    Stwórz plik `.env` w głównym folderze projektu (lub dodaj zmienną systemową) i wpisz swój klucz Google Gemini:
    ```env
    GEMINI_API_KEY=twoj-prywatny-klucz-api
    ```
 
-5. **Ściągnij model języka polskiego spaCy (dla dokładniejszego analizowania SEO):**
+4. **Ściągnij model języka polskiego spaCy (dla dokładniejszego analizowania SEO):**
    ```bash
    python -m spacy download pl_core_news_sm
    ```
