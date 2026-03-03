@@ -74,14 +74,16 @@ class TestIsTooLong:
 class TestStyleViolations:
     def test_shouting_flagged(self):
         flags = check_style_violations("PILNE: WIELKIE LITERY")
-        assert "shouting_detected" in flags
+        assert "krzyk_wersalikami" in flags
 
     def test_excessive_punctuation_flagged(self):
-        assert "excessive_punctuation" in check_style_violations("Wow!!!")
-        assert "excessive_punctuation" in check_style_violations("Really???")
+        assert "nadmierna_interpunkcja" in check_style_violations("Wow!!!")
+        assert "nadmierna_interpunkcja" in check_style_violations("Really???")
 
     def test_excessive_ellipsis_flagged(self):
-        assert "excessive_ellipsis" in check_style_violations("Something happened....")
+        assert "nadmierne_wielokropki" in check_style_violations(
+            "Something happened...."
+        )
 
     def test_normal_headline_no_flags(self):
         assert not check_style_violations("ZwykĹ‚y nagĹ‚Ăłwek bez krzyku")
@@ -236,7 +238,7 @@ class TestAssessHeadlineHeuristics:
             headlines=[long_headline],
             article_text="some text about something",
         )
-        assert "too_long" in results[0].flags
+        assert "zbyt_dlugi" in results[0].flags
 
     def test_banned_phrase_flagged(self):
         results = assess_headline_heuristics(
@@ -263,26 +265,26 @@ class TestAssessHeadlineHeuristics:
 
 class TestMergeFlags:
     def test_none_removed_when_real_flags_exist(self):
-        result = _merge_flags(["none"], ["too_vague"])
-        assert "none" not in result
-        assert "too_vague" in result
+        result = _merge_flags(["brak"], ["zbyt_ogolny"])
+        assert "brak" not in result
+        assert "zbyt_ogolny" in result
 
     def test_both_none_returns_none(self):
-        result = _merge_flags(["none"], ["none"])
-        assert result == ["none"]
+        result = _merge_flags(["brak"], ["brak"])
+        assert result == ["brak"]
 
     def test_deduplication(self):
-        result = _merge_flags(["too_vague", "too_long"], ["too_vague"])
-        assert result.count("too_vague") == 1
+        result = _merge_flags(["zbyt_ogolny", "zbyt_dlugi"], ["zbyt_ogolny"])
+        assert result.count("zbyt_ogolny") == 1
 
     def test_empty_inputs_return_none(self):
         result = _merge_flags([], [])
-        assert result == ["none"]
+        assert result == ["brak"]
 
     def test_heuristic_flags_come_first(self):
-        result = _merge_flags(["too_long"], ["clickbait_risk"])
-        assert result[0] == "too_long"
-        assert result[1] == "clickbait_risk"
+        result = _merge_flags(["zbyt_dlugi"], ["ryzyko_clickbait"])
+        assert result[0] == "zbyt_dlugi"
+        assert result[1] == "ryzyko_clickbait"
 
 
 class TestMergeAssessments:
@@ -300,7 +302,7 @@ class TestMergeAssessments:
             ctr_potential=ctr,
             clarity=clarity,
             seo_fit=seo,
-            risk_flags=flags or ["none"],
+            risk_flags=flags or ["brak"],
             rationale=rationale,
         )
 
@@ -331,12 +333,12 @@ class TestMergeAssessments:
         assert "LLM evaluator error" in items[0].rationale
 
     def test_flag_union_and_dedup(self):
-        h_results = [self._heuristic(0, flags=["too_long"])]
-        l_results = [self._llm(0, flags=["too_long", "clickbait_risk"])]
+        h_results = [self._heuristic(0, flags=["zbyt_dlugi"])]
+        l_results = [self._llm(0, flags=["zbyt_dlugi", "ryzyko_clickbait"])]
         items = merge_assessments(h_results, l_results, ["Headline 0"])
         flags = items[0].risk_flags
-        assert flags.count("too_long") == 1
-        assert "clickbait_risk" in flags
+        assert flags.count("zbyt_dlugi") == 1
+        assert "ryzyko_clickbait" in flags
 
     def test_headline_style_assigned(self):
         h_results = [self._heuristic(i) for i in range(5)]
@@ -355,8 +357,7 @@ class TestMergeAssessments:
         assert items[0].scores.seo_fit <= 100
 
     def test_penalties_applied(self):
-        # Test too_long penalty
-        h_res = [self._heuristic(0, flags=["too_long"])]
+        h_res = [self._heuristic(0, flags=["zbyt_dlugi"])]
         llm_res = [self._llm(0, ctr=90, clarity=90)]
         it = merge_assessments(h_res, llm_res, ["Short"])
         assert it[0].scores.ctr_potential <= 50
@@ -370,10 +371,10 @@ class TestMergeAssessments:
         assert it[0].scores.clarity <= 20
         assert it[0].scores.seo_fit <= 20
 
-        # Test clickbait_risk penalty
+        # Test ryzyko_clickbait penalty
         # Since we changed CTR penalty to be continuous based on clickbait_score: 80 - (score - 75) * 2
         # If clickbait_score is 85, max_ctr = 80 - (10) * 2 = 60
-        h_res = [self._heuristic(0, flags=["clickbait_risk"], clickbait_score=85)]
+        h_res = [self._heuristic(0, flags=["ryzyko_clickbait"], clickbait_score=85)]
         llm_res = [self._llm(0, ctr=90)]
         it = merge_assessments(h_res, llm_res, ["Clickbait"])
         assert it[0].scores.ctr_potential == 60

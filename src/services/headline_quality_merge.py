@@ -26,10 +26,10 @@ def _merge_flags(heuristic_flags: List[str], llm_flags: List[str]) -> List[str]:
     seen: set[str] = set()
     combined: List[str] = []
     for f in heuristic_flags + llm_flags:
-        if f != "none" and f not in seen:
+        if f != "brak" and f not in seen:
             seen.add(f)
             combined.append(f)
-    return combined if combined else ["none"]
+    return combined if combined else ["brak"]
 
 
 def _avg_clamp(*values: int) -> int:

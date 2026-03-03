@@ -52,11 +52,11 @@ class HeadlineAssessmentItem(BaseModel):
     @field_validator("risk_flags")
     @classmethod
     def validate_flags(cls, v: List[str]) -> List[str]:
-        """Validate and deduplicate risk flags, defaulting to ['none'] if empty."""
+        """Validate and deduplicate risk flags, defaulting to ['brak'] if empty."""
         # Remove duplicates while preserving order
         seen: set = set()
         deduped = [f for f in v if not (f in seen or seen.add(f))]  # type: ignore[func-returns-value]
-        return deduped if deduped else ["none"]
+        return deduped if deduped else ["brak"]
 
 
 class PackagingOutput(BaseModel):
