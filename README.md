@@ -1,11 +1,12 @@
-# WarnerBros Headline Optimizer & Clickbait Analyzer
+# HeadlineWise / Nagłówek AI
 
 Zaawansowane narzędzie do scrapowania, analizy i optymalizacji nagłówków artykułów. Łączy moc dużych modeli językowych (LLM - Google Gemini) z lokalnym modelem Machine Learning (Scikit-Learn) do oceny jakości i wiarygodności tekstów.
+
 
 ## 🚀 Główne funkcje
 
 - **Ekstrakcja treści (Scraping):** Pobieranie treści artykułów na podstawie URL lub masowe pobieranie prosto ze strony głównej (TVN24, Eurosport). Omija reklamy, paywalle i duplikaty.
-- **Ocena nagłówków w locie:** Pasek boczny do szybkiego wklejenia własnego tekstu i wygenerowania 10 propozycji nagłówków.
+- **Ocena nagłówków w locie:** Pasek boczny do szybkiego wklejenia własnego tekstu i wygenerowania 5 propozycji nagłówków.
 - **Przeglądarka portalu (Portal Browser):** Podgląd na żywo najnowszych artykułów z wybranych stron. Ocena oryginalnego nagłówka i propozycje optymalizacji.
 - **Moduł ML Clickbait Detection:** Lokalny, szybki model ML analizujący prawdopodobieństwo, czy dany cel jest "clickbaitem" (wyświetlany jako **Credibility Score**).
 - **Skrypty Data Science:** Zestaw skryptów do masowego tłumaczenia na język polski zbiorów danych (`googletrans`, `gemini`) oraz trenowania własnego modelu wykrywającego clickbaity.
@@ -23,9 +24,37 @@ Na koniec liczony jest **⭐ Overall Score** będący średnią z powyższych me
 
 ---
 
+## 🗂️ Struktura repozytorium
+
+```
+HeadlineWise/
+├── app.py                  # Główna aplikacja Streamlit (UI)
+├── conftest.py             # Konfiguracja pytest (fixtures)
+├── pyproject.toml          # Metadane projektu i zależności (uv/pip)
+├── requirements.txt        # Lista zależności kompatybilna z pip
+├── uv.lock                 # Zablokowane wersje zależności (uv)
+├── .env.example            # Przykładowy plik env z wymaganymi zmiennymi
+│
+├── data/                   # Dane treningowe ML i wytrenowany model
+│   ├── train_pl.csv        # Główny zbiór danych (clickbait PL)
+│   └── clickbait_model.pkl # Wytrenowany pipeline scikit-learn (TF-IDF + LR)
+│
+├── src/
+│   ├── core/               # Konfiguracja, schematy danych, szablony promptów, dostawcy LLM
+│   ├── services/           # Logika oceny nagłówków (LLM + heurystyki + merge)
+│   ├── utils/              # Scraper, konektory portali, telemetria
+│   ├── data/               # Artykuł Demo
+│   └── scripts/            # Skrypty Data Science: tłumaczenie zbiorów, trening modelu
+│
+├── tests/                  # Testy jednostkowe (pytest)
+└── telemetry/              # Cache wyników (JSON)
+```
+
+---
+
 ## 💻 Instalacja
 
-Aplikacja działa w Pythonie 3.11+ i wymaga środowiska wspierającego scikit-learn oraz biblioteki do wizualizacji.
+Aplikacja działa w Pythonie 3.12+ i wymaga środowiska wspierającego scikit-learn oraz biblioteki do wizualizacji.
 
 1. **Sklonuj repozytorium**
 
@@ -35,10 +64,23 @@ Aplikacja działa w Pythonie 3.11+ i wymaga środowiska wspierającego scikit-le
    pip install -r requirements.txt
    ```
 
-3. **Klucz API Gemini:**
-   Stwórz plik `.env` w głównym folderze projektu (lub dodaj zmienną systemową) i wpisz swój klucz Google Gemini:
+3. **Klucze API — dostawca LLM:**
+
+   HeadlineWise obsługuje dwóch dostawców LLM. Wybierz jednego i ustaw odpowiednią zmienną w pliku `.env`:
+
+   | Dostawca | Zmienna środowiskowa | Model domyślny |
+   |---|---|---|
+   | **Google Gemini** *(domyślny)* | `GEMINI_API_KEY` | `gemini-2.0-flash-lite` |
+   | **OpenAI** | `OPENAI_API_KEY` | `gpt-4o-mini` |
+
+   Przykładowy plik `.env` (skopiuj z `.env.example`):
    ```env
-   GEMINI_API_KEY=twoj-prywatny-klucz-api
+   # --- Dostawcy LLM (wymagany co najmniej jeden) ---
+   GEMINI_API_KEY=twoj-klucz-google-gemini
+   OPENAI_API_KEY=twoj-klucz-openai
+
+   # --- Wybór aktywnego dostawcy ---
+   DEFAULT_LLM_PROVIDER=gemini   # lub: openai
    ```
 
 4. **Ściągnij model języka polskiego spaCy (dla dokładniejszego analizowania SEO):**
@@ -90,7 +132,7 @@ Aplikacja uruchomi się pod lokalnym adresem: `http://localhost:8501`.
 ### Struktura Aplikacji:
 - **Zakładka "Twórz (wklej artykuł)":** Przydatne przy szybkim pisaniu tekstu. Wklejasz zawartość, system sugeruje paczkę nagłówków.
 - **Zakładka "Optymalizuj z URL":** Podajesz link do opublikowanego już artykułu, system zaciąga tekst, usuwa reklamy i optymalizuje.
-- **Zakładka "Przeglądaj portal":** Świeże newsy. Wczytywanie po API zawartości strony głównej portalu (np. Onet, TVP Info). System pokazuje aktualny tytuł na stronie i punktuje jego jakość (Credibility, SEO).
+- **Zakładka "Przeglądaj portal":** Świeże newsy. Wczytywanie po API zawartości strony głównej portalu (TVN24, Eurosport). System pokazuje aktualny tytuł na stronie i punktuje jego jakość (Credibility, SEO).
 
 ---
 

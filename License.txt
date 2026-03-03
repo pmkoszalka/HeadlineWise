@@ -1,0 +1,4 @@
+## License
+
+This repository is shared for portfolio and recruitment review purposes only.
+No reuse, redistribution, or modification is permitted without prior written consent from the author.
