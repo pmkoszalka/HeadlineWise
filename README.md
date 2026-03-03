@@ -1,4 +1,4 @@
-# HeadlineWise / Nagłówek AI
+# Nagłówek AI
 
 Zaawansowane narzędzie do scrapowania, analizy i optymalizacji nagłówków artykułów. Łączy moc dużych modeli językowych (LLM - Google Gemini) z lokalnym modelem Machine Learning (Scikit-Learn) do oceny jakości i wiarygodności tekstów.
 
@@ -66,7 +66,7 @@ Aplikacja działa w Pythonie 3.12+ i wymaga środowiska wspierającego scikit-le
 
 3. **Klucze API — dostawca LLM:**
 
-   HeadlineWise obsługuje dwóch dostawców LLM. Wybierz jednego i ustaw odpowiednią zmienną w pliku `.env`:
+   Nagłówek AI obsługuje dwóch dostawców LLM. Wybierz jednego i ustaw odpowiednią zmienną w pliku `.env`:
 
    | Dostawca | Zmienna środowiskowa | Model domyślny |
    |---|---|---|
